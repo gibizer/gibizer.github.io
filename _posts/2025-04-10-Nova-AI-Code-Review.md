@@ -7,7 +7,7 @@ hidden: true # remove it to publish the post
 
 ---
 
-I run an experiment of using AI code review tools on OpenStack Nova patches.
+I ran an experiment of using AI code review tools on OpenStack Nova patches.
 
 ## Goal
 
@@ -55,7 +55,6 @@ I selected a relatively small but involved feature consisting of multiple
 commits including some preparation / refactoring work, unit testing,
 functional testing, and documentation top of the actual feature implementation.
 
-
 The original review is accessible at
 [https://review.opendev.org/q/topic:bp/one-time-use-devices](https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
 The feature went through one major and a couple of minor iterations before
@@ -67,10 +66,9 @@ state of the feature ready for review. This was the state where the Nova
 maintainers first deeply reviewed the implementation. After this review the
 patch series went through multiple change and re-review cycles as usual.
 
-
 2. The [final](https://github.com/gibizer/nova/pull/1) version represents the
-last revision of the series that got merged to the upstream repository.
 
+last revision of the series that got merged to the upstream repository.
 The available AI tools provide out of the box integration with
 github.com, but not with any standalone
 [gerrit](https://www.gerritcodereview.com) installation. Fortunately Nova is
@@ -134,7 +132,6 @@ different feature this patch is depending on. This patch only uses the existing
 config option.
 
 ##### Inline comments
-
 
 
 #### CodeRabbit
