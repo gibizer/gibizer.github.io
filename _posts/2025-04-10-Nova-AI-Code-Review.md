@@ -135,26 +135,230 @@ Also the description of the groups contain multiple incorrect statements:
 
 ### Sourcery - Inline comments
 
+There was 4 inline comments so we can look at them one by one:
+
+1. > issue (testing): Add a test case to verify the invalidation logic when no
+   > allocations are present.
+
+    This is a valid unit test coverage request.
+
+2. > issue (testing): Add tests for invalid "one_time_use" values.
+
+    This is also valid on the high level. However looking deeper I found that
+    the code that such new unit test would really exercise is an external
+    utility
+    [`oslo.utils.strutils.bool_from_string`](https://github.com/openstack/oslo.utils/blob/2f36253cb0cc5b81cfcd8cdf4144caa3beb22d33/oslo_utils/strutils.py#L142)
+    that is already well covered with
+    [unit tests](https://github.com/openstack/oslo.utils/blob/2f36253cb0cc5b81cfcd8cdf4144caa3beb22d33/oslo_utils/tests/test_strutils.py#L31).
+    We should not duplicate such unit test for all users of that utility.
+
+3. > suggestion (code-quality): Merge nested if conditions (merge-nested-ifs)
+
+    It suggests that instead of two nested ifs use a single if with the merged
+    condition of the two original ifs. The generic rule or intention can be
+    valid. But the actual proposal how to execute that is actually problematic.
+
+    The tool proposes the following change:
+    ```diff
+    - if self.tags.get('one_time_use') == 'true':
+    -     # Validate that one_time_use=true is not set on devices where we
+    -     # cannot support proper reservation protection.
+    -     if not CONF.pci.report_in_placement:
+    -         raise exception.PciConfigInvalidSpec(
+    -             reason=_('one_time_use=true requires '
+    -                      'pci.report_in_placement to be enabled'))
+
+    + if self.tags.get('one_time_use') == 'true' and not CONF.pci.report_in_placement:
+    +     raise exception.PciConfigInvalidSpec(
+    +         reason=_('one_time_use=true requires '
+    +                  'pci.report_in_placement to be enabled'))
+    ```
+    The tool basically suggest to drop the code comment altogether which is
+    wrong. Moreover having a code comment there is a reason why I would not
+    suggest the actual merging of the ifs. So applying the suggestion blindly
+    is dangerous. Merging the conditions might be acceptable.
+
+
+4. > issue (code-quality): Use contextlib's suppress method to silence an error
+   > (use-contextlib-suppress)
+
+    This suggests a way to catch and drop exceptions with a context manager
+    instead of with an `except: pass` construct currently used in the code.
+    Technically this is correct, the two ways are equivalent and the suggested
+    way is more explicit about the intention. However the Nova code base never
+    uses the suggested style. So this might be a style controversy a bit.
+
+
 ### CodeRabbit - PR Summary
 
-### CodeRabbit - Reviewer's Guide
+This tool provided a correct summary of the feature.
+
+It slightly overemphasized one irrelevant documentation change:
+
+> Updated the documentation glossary with the new "OTU" dictionary entry.
+
+
+### CodeRabbit - Walkthrough
+
+The summary here is correct but fairly high level and generic.
+
+The Changes table splits the changes into groups based doc, test, impl but
+also based on steps taken in the implementation. The categorization seems
+correct and complete.
+
+### CodeRabbit - Sequence Diagram
+
+This tool provides multiple call graphs based on the impacted code paths.
+
+Some actor on the diagrams are using generalized names that are not used
+in the nova parlance like "Inventory System" instead of "Placement".
+
+Otherwise the sequence diagrams seems to be correct and feels actually helpful
+to look at the change from a different than the code diff perspective.
+
 
 ### CodeRabbit - Inline comments
+
+This tool generated 4 comments marked as "nitpicks" and no real inline
+comments. I think it means the tool found no real actionable issue.
+
+Still we can look at the nitpicks:
+
+1. > ... the code could be simplified by combining the nested if statements.
+
+    Same nested if simplification comment as from Sourcery but it does not
+    fail to preserve the code comment like Sourcery.
+
+2. > contextlib.suppress
+
+    Same suggestion as from Sourcery to use a context manager over an
+    `expect: pass` construct. Same comment here that the suggestion is a bit
+    more explicit but probably a style question as well.
+
+3. > Consider dropping the .keys() usage.
+
+    Technically correct suggestion. A real nitpick as the bot categorized. :)
+
+4. > improve assertion clarity ... Using a more specific regex pattern would
+   > make the test's expected behavior more explicit.
+
+    The suggested test improvement is valid but also a real nitpick. :)
+
 
 ## Human review feedback on the initial version
 
 To be able to compare and contrast the AI review feedback with real human
-review feedback I summarized my original review comments below. The full
+review feedback I summarized my main review comments below. The full
 review discussion can be read on
 [gerrit](https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
 
+1. I found a bug in the `_invalidate_pci_in_placement_cached_rps` that it
+unnecessarily iterates on every inventory of the RP when invalidating it.
+
+2. In couple of places the code assumed that the inventory generation logic
+runs against the existing inventory and modifies that. But that is not true.
+The code run in a way to always re-generate the full inventory and then if
+that is different from the existing inventory then do an update to Placement.
+This means that the patch cannot detect when the reserved field is first set
+from 0 to total. This only caused a minor bug in logging and dead code in trait
+handling.
+
+3. I suggested a set of refactorings to move the OTU handling closer to the
+pre-existing structure and dataflow of Nova.
 
 
 ## AI feedback on the final version
 
+I will only look at any new or changed review feedback for the final version
+from the bots.
+
 ### Sourcery
 
+The PR summary is still misleading about why we reserve. But the Reviewer's
+Guide is improved and correctly state the logic.
+
+The File-Level Changes degraded as it now only have a single group instead of
+multiple groups, so it is not helpful at all any more.
+
+There are couple of new inline comments:
+
+1. > issue (testing): Missing assertion after creating the server
+   > It's important to assert that the server is in ACTIVE state after creation
+   > to ensure that the device allocation was successful.
+
+     This comment is incorrect the `_create_server` used by the test already
+     asserts the state of the server.
+
+2. > suggestion (typo): Consider using consistent casing/hyphenation for
+   > "one-time-use" throughout the document. The title uses "One-Time-Use"
+   > while the body uses "one time use".
+
+    This is technically correct.
+
+3. > issue (code-quality): Replace interpolated string formatting with f-string
+
+    This is purely a style question. Both way is totally correct.
+
+
 ### CodeRabbit
+
+
+The Summary, Walkthrough, and Changes sections are pretty similar to the
+initial PR review.
+
+The Sequence diagram is changed to reflect the refactored code. The actor names
+are a lot better now. But unfortunately there are incorrect actions on the
+diagram:
+
+> Request allocation of OTU device
+
+The code is not built to react on the allocation requests, it is built on
+the inventory generation periodic that happen to be run both periodically and
+at certain events like VM boot. I'm pretty sure that this is a misunderstanding
+about the changes in the dev_spec.py that "discovering" available devices with
+OTU flag.
+
+There is one "Actionable" comment provided:
+
+1. > Improve Test Robustness by Verifying Server State
+
+This is basically the same mistake Sourcery have. They miss the fact that
+`_create_server` already does this assert.
+
+
+There was additional "nitpick" comments provided:
+
+1. > The enhanced_pci_device_with_spec_tags method should also include the new
+   > one_time_use tag, otherwise the tag won't be transferred to the device
+   > object.
+
+   This is completely wrong, the final version of the change intentionally
+   removed the logic that adds OTU to the PCIDevice object as it implements all
+   the logic based on the device_spec information.
+
+2. > Improvement to assertion logic enhances test flexibility.
+   > ..., there's a potential issue when inv_assertions contains keys not
+   > present in rp_inv[rc], which could raise a KeyError.
+
+   The reasoning in the local context is valid. The new assert helper in the
+   test would fail with a KeyError on non existing inventory fields. However as
+   this is test code, in such case the test would fail and therefore the issue
+   is caught. The both suggests to instead of raising a KeyError raise an
+   AssertError via self.fail. I don't see the value in this due to the needed
+   complexity increase.
+
+3. > The note correctly references the prerequisite configuration but uses both
+   > "PCI-in-placement" and "pci-tracking-in-placement" which might be
+   > confusing. Consider standardizing on one term throughout the
+   > documentation.
+
+   This is a valid doc improvement suggestion.
+
+4. > there's a minor issue with an unused variable:
+
+    This is valid the variable is indeed unused and the code can be simplified.
+
+
 
 ## Conclusion
 
