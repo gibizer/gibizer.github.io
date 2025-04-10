@@ -57,8 +57,7 @@ functional testing, and documentation top of the actual feature implementation.
 
 
 The original review is accessible at
-[https://review.opendev.org/q/topic:bp/one-time-use-devices]
-(https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
+[https://review.opendev.org/q/topic:bp/one-time-use-devices](https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
 The feature went through one major and a couple of minor iterations before
 merged. So I selected two states of the patches for review by the
 AI tools:
@@ -73,7 +72,7 @@ patch series went through multiple change and re-review cycles as usual.
 last revision of the series that got merged to the upstream repository.
 
 The available AI tools provide out of the box integration with
-[github.com](github.com), but not with any standalone
+github.com, but not with any standalone
 [gerrit](https://www.gerritcodereview.com) installation. Fortunately Nova is
 open source, so it is easy to set up a [fork](https://github.com/gibizer/nova)
 of the [Nova's code mirror](https://github.com/openstack/nova).
