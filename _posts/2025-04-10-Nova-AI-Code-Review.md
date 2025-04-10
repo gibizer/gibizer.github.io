@@ -7,7 +7,7 @@ hidden: true # remove it to publish the post
 
 ---
 
-# An experiment of using AI code review tools on OpenStack Nova patches
+I run an experiment of using AI code review tools on OpenStack Nova patches.
 
 ## Goal
 
@@ -22,52 +22,67 @@ I've searched for AI code review tools that are:
 * freely available or have a trial period
 
 The tools I selected are
-* http://sourcery.ai
-* http://coderabbit.ai
+* [Sourcery](http://sourcery.ai)
+* [CodeRabbit](http://coderabbit.ai)
+
+Setting up both tools does not take more than 5 minutes via their respective
+websites. One can select and authorize the bots to access certain github
+repositories.
 
 ## Nova
 
-https://www.openstack.org/
+[openstack.org](https://www.openstack.org/):
 > OpenStack is an open source cloud computing infrastructure software project
 > and is one of the three most active open source projects in the world.
 
-https://docs.openstack.org/nova/latest/
+
+[docs.openstack.org/nova](https://docs.openstack.org/nova/latest/):
 > Nova is the OpenStack project that provides a way to provision compute
 > instances (aka virtual servers). Nova supports creating virtual machines,
 > baremetal servers (through the use of ironic), and has limited support for
 > system containers. Nova runs as a set of daemons on top of existing Linux
 > servers to provide that service.
 
+
 Nova consists of more than 300 KLOC open source python code. It is developed
 via a strict code review process where two of the project maintainers need
 to approve a patch before it can land. The code review happens via gerrit
-on https://review.opendev.org.
+on [review.opendev.org](https://review.opendev.org).
 
 ## Patches to review
 
-I selected a relatively small but involved feature change consisting of
-multiple commits including some preparation / refactoring work, unit testing,
+I selected a relatively small but involved feature consisting of multiple
+commits including some preparation / refactoring work, unit testing,
 functional testing, and documentation top of the actual feature implementation.
 
-The original review is accessible at https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22. The feature went through one major and a couple of
-minor iterations. So I selected two states of the patches for review by the
-AI tools:
-* https://github.com/gibizer/nova/pull/2 represents the state of the feature
-ready for review and mostly working but before the real review from the
-maintainers. So this represent the state of the code when the author requested
-review from the maintainers. After that review this series when through
-multiple changes and re-review cycles before it was merged. Below I refer to
-this version as "initial".
-* https://github.com/gibizer/nova/pull/1 represents the last revision of the
-series that got merged to the upstream repository. Below I refer to this
-version as "final".
 
-The available AI tools provide out of the box integration with github.com, but
-not with any standalone gerrit installation. Fortunately Nova is open source,
-so it is easy to set up a github fork of the Nova's code mirror,
-github.com/openstack/nova, and create pull requests from patch series from
-gerrit by pushing local git branches of those patches to the github fork.
-Then let the AI tools review those PRs.
+The original review is accessible at
+[https://review.opendev.org/q/topic:bp/one-time-use-devices]
+(https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
+The feature went through one major and a couple of minor iterations before
+merged. So I selected two states of the patches for review by the
+AI tools:
+
+1. The [initial](https://github.com/gibizer/nova/pull/2) version represents the
+state of the feature ready for review. This was the state where the Nova
+maintainers first deeply reviewed the implementation. After this review the
+patch series went through multiple change and re-review cycles as usual.
+
+
+2. The [final](https://github.com/gibizer/nova/pull/1) version represents the
+last revision of the series that got merged to the upstream repository.
+
+The available AI tools provide out of the box integration with
+[github.com](github.com), but not with any standalone
+[gerrit](https://www.gerritcodereview.com) installation. Fortunately Nova is
+open source, so it is easy to set up a [fork](https://github.com/gibizer/nova)
+of the [Nova's code mirror](https://github.com/openstack/nova).
+Then the original patches can be fetched from gerrit and pushed as a PR against
+this fork. I did this manually for the trial but it would not be super hard
+to automatically do this.
+
+As the AI bots are automatically reacting to incoming PRs I only had the task
+to review the AI reviews (sic!).
 
 ## Analysis of the review comments
 
