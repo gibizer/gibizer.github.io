@@ -81,66 +81,83 @@ to automatically do this.
 As the AI bots are automatically reacting to incoming PRs I only had the task
 to review the AI reviews (sic!).
 
-## Analysis of the review comments
-
-### AI feedback on the initial version
+## AI feedback on the initial version
 
 Both tool directly edits the github PR summary with its own summary of the PR.
 This feel very intrusive but probably can be disabled / reconfigured.
 
-#### Sourcery
+Both tool generates a set of sections as part of their output like a summary
+for the whole PR then a guide that tries to break down the PR into reviewable
+parts and finally a set of inline comments.
 
-##### PR Summary
+### Sourcery - PR Summary
 
 The PR summary has multiple inaccuracies. For example:
 
 > Introduce a 'one_time_use' tag for PCI devices that allows devices to remain
 in a reserved state after allocation
 
-It is incorrect as the device get into reserved state (instead of remaining in)
-at allocation. And the important effect of the new feature is that the device
-remains in reserved state after the **deallocation** of the device preventing
-the re-allocation of the device until the device is externally un-reserved.
-This is the core of the "one time use" feature, so missing this point is pretty
-sever. As it is not just incomplete but actively misleading the reader.
+It is incorrect as the device gets into reserved state (instead of remaining
+in it) at allocation. And the important effect of the new feature is that the
+device remains in reserved state after the **deallocation** of the device
+preventing the re-allocation of the device until the device is externally
+un-reserved. This is the core of the "one time use" feature, so missing this
+point is pretty sever. The summary is not just incomplete but actively
+misleading the reader.
 
 The "Enhancement" section is mostly a repetition of the "New Features" section
 only the second bullet point adds extra information.
 
-##### Reviewer's Guide
+### Sourcery - Reviewer's Guide
 
-The summary here just a re-formatted version of the tool's PR summary nothing
-new. The File-Level Changes table splits the changes in pretty arbitrary
+The summary here is just a re-formatted version of the PR summary. Nothing new.
+
+The "File-Level Changes" table splits the changes in pretty arbitrary
 groups. E.g. it creates a test group then fails to add every files with
 test cases and adds test files to other groups.
-Also the description of the groups contain multiple incorrect statements,
-e.g.:
 
-> Introduces the HW_PCI_ONE_TIME_USE trait for one-time-use PCI devices.
+Also the description of the groups contain multiple incorrect statements:
 
-The tool totally misses the fact the trait is an external dependency that is
-not introduced by this PR but a separate patch in a separate repo and such
-patch needs to land first before this can function. Even though this
-information is right in the commit message of the given patch and in the PR
-summary as well.
+1. > Introduces the HW_PCI_ONE_TIME_USE trait for one-time-use PCI devices.
 
-> Adds a configuration option pci.report_in_placement to enable one-time-use
-> support.
+    The tool totally misses the fact the trait is an external dependency that
+    is not introduced by this change, but a separate patch in a separate repo
+    and such patch needs to land first before this can function. This happens
+    even though this information is right in the commit message of the given
+    patch.
 
-This is incorrect the config option is added years before as part of a
-different feature this patch is depending on. This patch only uses the existing
-config option.
+2. > Adds a configuration option pci.report_in_placement to enable one-time-use
+   > support.
 
-##### Inline comments
+    This is incorrect. The config option is added years before as part of a
+    different feature this patch is depending on. This patch only uses the
+    existing config option.
+
+### Sourcery - Inline comments
+
+### CodeRabbit - PR Summary
+
+### CodeRabbit - Reviewer's Guide
+
+### CodeRabbit - Inline comments
+
+## Human review feedback on the initial version
+
+To be able to compare and contrast the AI review feedback with real human
+review feedback I summarized my original review comments below. The full
+review discussion can be read on
+[gerrit](https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
 
 
-#### CodeRabbit
 
-### Human review feedback on the initial version
+## AI feedback on the final version
 
-### AI feedback on the final version
+### Sourcery
 
-#### Sourcery
+### CodeRabbit
 
-#### CodeRabbit
+## Conclusion
 
+**The positives**
+
+**The negatives**
