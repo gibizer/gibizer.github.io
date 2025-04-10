@@ -22,8 +22,8 @@ I've searched for AI code review tools that are:
 * freely available or have a trial period
 
 The tools I selected are
-* [Sourcery](http://sourcery.ai)
-* [CodeRabbit](http://coderabbit.ai)
+* [Sourcery](https://sourcery.ai)
+* [CodeRabbit](https://coderabbit.ai)
 
 Setting up both tools does not take more than 5 minutes via their respective
 websites. One can select and authorize the bots to access certain github
