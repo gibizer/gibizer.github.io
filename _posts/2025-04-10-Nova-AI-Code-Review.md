@@ -7,18 +7,18 @@ hidden: true # remove it to publish the post
 
 ---
 
-I ran an experiment of using AI code review tools on OpenStack Nova patches.
+I ran an experiment using AI code review tools on OpenStack Nova patches.
 
 ## Goal
 
 Use existing AI code review tools on incoming patches for the OpenStack Nova
-open source project and review the validity, deepness and completeness of
+open source project and review the validity, deepness, and completeness of
 the provided review comments.
 
 ## AI tools
 
 I've searched for AI code review tools that are:
-* integrated to github.com and capable of reacting to incoming pull requests
+* integrated to Github and capable of reacting to incoming pull requests
 * freely available or have a trial period
 
 The tools I selected are
@@ -26,7 +26,7 @@ The tools I selected are
 * [CodeRabbit](https://coderabbit.ai)
 
 Setting up both tools does not take more than 5 minutes via their respective
-websites. One can select and authorize the bots to access certain github
+websites. One can select and authorize the bots to access specific Github
 repositories.
 
 ## Nova
@@ -44,16 +44,17 @@ repositories.
 > servers to provide that service.
 
 
-Nova consists of more than 300 KLOC open source python code. It is developed
+Nova consists of more than 300 KLOC open source Python code. It is developed
 via a strict code review process where two of the project maintainers need
-to approve a patch before it can land. The code review happens via gerrit
+to approve a patch before it can land. The code review happens via Gerrit
 on [review.opendev.org](https://review.opendev.org).
 
 ## Patches to review
 
 I selected a relatively small but involved feature consisting of multiple
-commits including some preparation / refactoring work, unit testing,
-functional testing, and documentation top of the actual feature implementation.
+commits including some preparation/refactoring work, unit testing,
+functional testing, and documentation on top of the actual feature
+implementation.
 
 The original review is accessible at
 [https://review.opendev.org/q/topic:bp/one-time-use-devices](https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
@@ -63,31 +64,31 @@ AI tools:
 
 1. The [initial](https://github.com/gibizer/nova/pull/2) version represents the
 state of the feature ready for review. This was the state where the Nova
-maintainers first deeply reviewed the implementation. After this review the
+maintainers first deeply reviewed the implementation. After this review, the
 patch series went through multiple change and re-review cycles as usual.
 
 2. The [final](https://github.com/gibizer/nova/pull/1) version represents the
-
 last revision of the series that got merged to the upstream repository.
-The available AI tools provide out of the box integration with
-github.com, but not with any standalone
-[gerrit](https://www.gerritcodereview.com) installation. Fortunately Nova is
+
+The available AI tools provide easy integration with Github, but not with
+any standalone
+[Gerrit](https://www.gerritcodereview.com) installation. Fortunately, Nova is
 open source, so it is easy to set up a [fork](https://github.com/gibizer/nova)
 of the [Nova's code mirror](https://github.com/openstack/nova).
-Then the original patches can be fetched from gerrit and pushed as a PR against
-this fork. I did this manually for the trial but it would not be super hard
-to automatically do this.
+Then the original patches can be fetched from Gerrit and pushed as a PR against
+this fork. I did this manually for the trial, but it would not be super hard
+to automate it.
 
 As the AI bots are automatically reacting to incoming PRs I only had the task
 to review the AI reviews (sic!).
 
 ## AI feedback on the initial version
 
-Both tool directly edits the github PR summary with its own summary of the PR.
-This feel very intrusive but probably can be disabled / reconfigured.
+Both tools directly edit the Github PR summary with its own summary of the PR.
+This feels very intrusive but probably can be disabled/reconfigured.
 
-Both tool generates a set of sections as part of their output like a summary
-for the whole PR then a guide that tries to break down the PR into reviewable
+Both tools generate a set of sections as part of their output like a summary
+for the whole PR then a guide that breaks down the PR into reviewable
 parts and finally a set of inline comments.
 
 ### Sourcery - PR Summary
@@ -98,12 +99,11 @@ The PR summary has multiple inaccuracies. For example:
 in a reserved state after allocation
 
 It is incorrect as the device gets into reserved state (instead of remaining
-in it) at allocation. And the important effect of the new feature is that the
-device remains in reserved state after the **deallocation** of the device
-preventing the re-allocation of the device until the device is externally
-un-reserved. This is the core of the "one time use" feature, so missing this
-point is pretty sever. The summary is not just incomplete but actively
-misleading the reader.
+in it) at allocation. The important effect of the new feature is that the
+device remains in reserved state after the **deallocation** preventing
+reallocation until the device is externally un-reserved. This is the core of
+the "one time use" feature, so missing this point is pretty severe. The summary
+is not just incomplete but actively misleading the reader.
 
 The "Enhancement" section is mostly a repetition of the "New Features" section
 only the second bullet point adds extra information.
@@ -112,30 +112,30 @@ only the second bullet point adds extra information.
 
 The summary here is just a re-formatted version of the PR summary. Nothing new.
 
-The "File-Level Changes" table splits the changes in pretty arbitrary
-groups. E.g. it creates a test group then fails to add every files with
+The "File-Level Changes" table splits the changes into pretty arbitrary
+groups. E.g. it creates a test group then fails to add every file with
 test cases and adds test files to other groups.
 
-Also the description of the groups contain multiple incorrect statements:
+Also, the description of the groups contains multiple incorrect statements:
 
 1. > Introduces the HW_PCI_ONE_TIME_USE trait for one-time-use PCI devices.
 
-    The tool totally misses the fact the trait is an external dependency that
-    is not introduced by this change, but a separate patch in a separate repo
-    and such patch needs to land first before this can function. This happens
-    even though this information is right in the commit message of the given
-    patch.
+    The tool totally misses the fact that the trait is an external dependency
+    that is not introduced by this change, but a separate patch in a separate
+    repo and that patch needs to land first before this can function. This
+    happens even though this information is right in the commit message of the
+    given patch.
 
 2. > Adds a configuration option pci.report_in_placement to enable one-time-use
    > support.
 
     This is incorrect. The config option is added years before as part of a
-    different feature this patch is depending on. This patch only uses the
+    different feature this patch depends on. This patch only uses the
     existing config option.
 
 ### Sourcery - Inline comments
 
-There was 4 inline comments so we can look at them one by one:
+There were 4 inline comments so we can look at them one by one:
 
 1. > issue (testing): Add a test case to verify the invalidation logic when no
    > allocations are present.
@@ -144,21 +144,20 @@ There was 4 inline comments so we can look at them one by one:
 
 2. > issue (testing): Add tests for invalid "one_time_use" values.
 
-    This is also valid on the high level. However looking deeper I found that
-    the code that such new unit test would really exercise is an external
-    utility
+    This is also valid on the high level. However, looking deeper I found that
+    the code that such new unit tests would exercise is an external utility
     [`oslo.utils.strutils.bool_from_string`](https://github.com/openstack/oslo.utils/blob/2f36253cb0cc5b81cfcd8cdf4144caa3beb22d33/oslo_utils/strutils.py#L142)
     that is already well covered with
     [unit tests](https://github.com/openstack/oslo.utils/blob/2f36253cb0cc5b81cfcd8cdf4144caa3beb22d33/oslo_utils/tests/test_strutils.py#L31).
-    We should not duplicate such unit test for all users of that utility.
+    We should not duplicate such unit tests for all users of that utility.
 
 3. > suggestion (code-quality): Merge nested if conditions (merge-nested-ifs)
 
     It suggests that instead of two nested ifs use a single if with the merged
     condition of the two original ifs. The generic rule or intention can be
-    valid. But the actual proposal how to execute that is actually problematic.
+    valid. But the actual proposal on how to execute that is problematic.
 
-    The tool proposes the following change:
+    The tool proposes the following changes:
     ```diff
     - if self.tags.get('one_time_use') == 'true':
     -     # Validate that one_time_use=true is not set on devices where we
@@ -173,7 +172,7 @@ There was 4 inline comments so we can look at them one by one:
     +         reason=_('one_time_use=true requires '
     +                  'pci.report_in_placement to be enabled'))
     ```
-    The tool basically suggest to drop the code comment altogether which is
+    The tool suggests dropping the code comment altogether which is
     wrong. Moreover having a code comment there is a reason why I would not
     suggest the actual merging of the ifs. So applying the suggestion blindly
     is dangerous. Merging the conditions might be acceptable.
@@ -185,8 +184,9 @@ There was 4 inline comments so we can look at them one by one:
     This suggests a way to catch and drop exceptions with a context manager
     instead of with an `except: pass` construct currently used in the code.
     Technically this is correct, the two ways are equivalent and the suggested
-    way is more explicit about the intention. However the Nova code base never
-    uses the suggested style. So this might be a style controversy a bit.
+    way is more explicit about the intention. However, the Nova code base never
+    uses the suggested style. So this might be a style controversy among the
+    maintainers.
 
 
 ### CodeRabbit - PR Summary
@@ -200,21 +200,21 @@ It slightly overemphasized one irrelevant documentation change:
 
 ### CodeRabbit - Walkthrough
 
-The summary here is correct but fairly high level and generic.
+The summary here is correct but fairly high-level and generic.
 
-The Changes table splits the changes into groups based doc, test, impl but
-also based on steps taken in the implementation. The categorization seems
-correct and complete.
+The "Changes" table splits the changes into groups based on doc, test, and
+implementation but also based on steps taken in the implementation. The
+categorization seems correct and complete.
 
 ### CodeRabbit - Sequence Diagram
 
 This tool provides multiple call graphs based on the impacted code paths.
 
-Some actor on the diagrams are using generalized names that are not used
-in the nova parlance like "Inventory System" instead of "Placement".
+Some actors on the diagrams use generalized names that are not used
+in the Nova parlance like "Inventory System" instead of "Placement".
 
-Otherwise the sequence diagrams seems to be correct and feels actually helpful
-to look at the change from a different than the code diff perspective.
+Otherwise, the sequence diagrams seem to be correct and feel helpful
+to look at the change from a different, than the code diff, perspective.
 
 
 ### CodeRabbit - Inline comments
@@ -222,11 +222,11 @@ to look at the change from a different than the code diff perspective.
 This tool generated 4 comments marked as "nitpicks" and no real inline
 comments. I think it means the tool found no real actionable issue.
 
-Still we can look at the nitpicks:
+Still, we can look at the nitpicks:
 
 1. > ... the code could be simplified by combining the nested if statements.
 
-    Same nested if simplification comment as from Sourcery but it does not
+    Same nested if simplification comment as from Sourcery, but it does not
     fail to preserve the code comment like Sourcery.
 
 2. > contextlib.suppress
@@ -237,12 +237,12 @@ Still we can look at the nitpicks:
 
 3. > Consider dropping the .keys() usage.
 
-    Technically correct suggestion. A real nitpick as the bot categorized. :)
+    Technically correct suggestion but a super nitpick.
 
 4. > improve assertion clarity ... Using a more specific regex pattern would
    > make the test's expected behavior more explicit.
 
-    The suggested test improvement is valid but also a real nitpick. :)
+    The suggested test improvement is valid, but also a super nitpick.
 
 
 ## Human review feedback on the initial version
@@ -250,18 +250,18 @@ Still we can look at the nitpicks:
 To be able to compare and contrast the AI review feedback with real human
 review feedback I summarized my main review comments below. The full
 review discussion can be read on
-[gerrit](https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
+[Gerrit](https://review.opendev.org/q/topic:%22bp/one-time-use-devices%22).
 
 1. I found a bug in the `_invalidate_pci_in_placement_cached_rps` that it
 unnecessarily iterates on every inventory of the RP when invalidating it.
 
-2. In couple of places the code assumed that the inventory generation logic
+2. In a couple of places the code assumed that the inventory generation logic
 runs against the existing inventory and modifies that. But that is not true.
-The code run in a way to always re-generate the full inventory and then if
-that is different from the existing inventory then do an update to Placement.
-This means that the patch cannot detect when the reserved field is first set
-from 0 to total. This only caused a minor bug in logging and dead code in trait
-handling.
+The code runs in a way to always re-generate the full inventory and then if
+that is different from the existing inventory do an update to Placement.
+This means that the patch cannot detect when the `reserved` field is first set
+from `0` to `total`. This only caused a minor bug in logging and dead code in
+trait handling.
 
 3. I suggested a set of refactorings to move the OTU handling closer to the
 pre-existing structure and dataflow of Nova.
@@ -274,13 +274,13 @@ from the bots.
 
 ### Sourcery
 
-The PR summary is still misleading about why we reserve. But the Reviewer's
-Guide is improved and correctly state the logic.
+The PR summary is still misleading about why we reserve. But the "Reviewer's
+Guide" is improved and correctly states the logic.
 
-The File-Level Changes degraded as it now only have a single group instead of
-multiple groups, so it is not helpful at all any more.
+The "File-Level Changes" degraded as it now only has a single group instead of
+multiple groups, so it is not helpful at all anymore.
 
-There are couple of new inline comments:
+There are a couple of new inline comments:
 
 1. > issue (testing): Missing assertion after creating the server
    > It's important to assert that the server is in ACTIVE state after creation
@@ -293,59 +293,59 @@ There are couple of new inline comments:
    > "one-time-use" throughout the document. The title uses "One-Time-Use"
    > while the body uses "one time use".
 
-    This is technically correct doc improvement.
+    This is a technically correct doc improvement.
 
 3. > issue (code-quality): Replace interpolated string formatting with f-string
 
-    This is purely a style question. Both way is totally correct.
+    This is purely a style question. Both ways are totally correct.
 
 
 ### CodeRabbit
 
 
-The Summary, Walkthrough, and Changes sections are pretty similar to the
+The "Summary", "Walkthrough", and "Changes" sections are pretty similar to the
 initial PR review.
 
-The Sequence diagram is changed to reflect the refactored code. The actor names
-are a lot better now. But unfortunately there are incorrect actions on the
-diagram:
+The "Sequence diagram" is changed to reflect the refactored code. The actor
+names are a lot better now. But unfortunately, there are incorrect actions on
+the diagram:
 
 > Request allocation of OTU device
 
-The code is not built to react on the allocation requests, it is built on
-the inventory generation periodic that happen to be run both periodically and
+The code is not built to react to the allocation requests, it is built on
+the inventory generation logic that happens to run both periodically and
 at certain events like VM boot. I'm pretty sure that this is a misunderstanding
-about the changes in the dev_spec.py that "discovering" available devices with
-OTU flag.
+about the changes in the `dev_spec.py` that "discovering" available devices
+with OTU flag.
 
 There is one "Actionable" comment provided:
 
 1. > Improve Test Robustness by Verifying Server State
 
-This is basically the same mistake Sourcery have. They miss the fact that
-`_create_server` already does this assert.
+    This is the same mistake Sourcery made. They both miss the fact that
+    `_create_server` already does this assert.
 
 
-There was additional "nitpick" comments provided:
+There were additional "nitpick" comments provided:
 
 1. > The enhanced_pci_device_with_spec_tags method should also include the new
    > one_time_use tag, otherwise the tag won't be transferred to the device
    > object.
 
-   This is completely wrong, the final version of the change intentionally
-   removed the logic that adds OTU to the PCIDevice object as it implements all
-   the logic based on the device_spec information.
+   This is completely wrong. The final version of the change intentionally
+   removed the logic that adds the tag to the PCIDevice object as it implements
+   all the logic based on the device_spec information instead.
 
 2. > Improvement to assertion logic enhances test flexibility.
    > ..., there's a potential issue when inv_assertions contains keys not
    > present in rp_inv[rc], which could raise a KeyError.
 
    The reasoning in the local context is valid. The new assert helper in the
-   test would fail with a KeyError on non existing inventory fields. However as
-   this is test code, in such case the test would fail and therefore the issue
-   is caught. The both suggests to instead of raising a KeyError raise an
-   AssertError via self.fail. I don't see the value in this due to the needed
-   complexity increase.
+   test would fail with a `KeyError` on nonexisting inventory fields. However,
+   as this is test code, in such case the test would fail and therefore the
+   issue is caught. The bot suggests that instead of raising a `KeyError` raise
+   an `AssertError` via `self.fail()`. I don't see the value in this change due
+   to the extra logic it requires.
 
 3. > The note correctly references the prerequisite configuration but uses both
    > "PCI-in-placement" and "pci-tracking-in-placement" which might be
@@ -356,58 +356,59 @@ There was additional "nitpick" comments provided:
 
 4. > there's a minor issue with an unused variable:
 
-    This is valid the variable is indeed unused and the code can be simplified.
-
+    This is valid. The variable is indeed unused and the code can be
+    simplified.
 
 
 ## Conclusion
 
 **The positives**
 
-* Both tools are super easy to setup for github repositories. Unfortunately
-  the same level of integration does not exists for gerrit today.
+* Both tools are super easy to set up for Github repositories. Unfortunately
+  the same level of integration does not exist for Gerrit today.
 
-* Both tools was able to report some valid comments on the patches.
+* Both tools were able to report some valid comments on the patches.
 
-* Both tools was able to handle multiple commits within a single PR.
+* Both tools were able to handle multiple commits within a single PR.
 
 * The sequence diagram for CodeRabbit provides a different viewpoint of the
-  change.
+  change under review.
 
 **The negatives**
 
 * Both tools provided multiple invalid comments. Some of them appeared correct
-  at the first look, but looking deeper it turned out to be unnecessary or even
+  at first look, but digging deeper it turned out to be unnecessary or even
   harmful.
 
 * Both tools made incorrect statements about what the proposed PR does or does
   not do.
 
-* The valid comments the tools provided was all low value mostly nitpicks or
+* The valid comments the tools provided were all low value, mostly nitpicks or
   small non-consequential changes. Compared to the human review that discovered
   actual bugs, false assumptions, and suggested structural changes enhancing
-  the structure of the code, supporting high level readability and
+  the structure of the code, supporting high-level readability and
   maintainability of the software.
 
-* Both tools was verbose but Sourcery was a lot more verbose repeating the same
-  set of information multiple times in different format and with different
-  wording causing fatigue from the human reviewer.
+* Both tools were verbose, but Sourcery was a lot more verbose repeating the
+  same set of information multiple times in different formats and with
+  different wording causing fatigue from the human reviewer.
 
-The only real use I can imagine form the tools is the summarization capability
-of a big PR / long patch chain. However Sourcery made multiple factual mistakes
-in their summary and therefore I would not trust it. CodeRabbit has better
-summarization capabilities and the sequence diagram appears useful. However
-in the final version the sequence diagram was also misleading. So I would be
-hesitant to blindly trust it for every patches I did not review deeply first.
+The only real use I can imagine from the tools is the summarization capability
+of a big PR / long patch chain. However, Sourcery made multiple factual
+mistakes in their summary and therefore I would not trust it. CodeRabbit has
+better summarization capabilities and the sequence diagram appears useful.
+However, in the final version, the sequence diagram was also misleading. So I
+would be hesitant to blindly trust it on a patch I did not review deeply
+first.
 
-CodeRabbit is pretty self conscious and marks most of its inline comments as
-nitpicks and indeed they are mostly nitpicks with occasional useful improvement
-suggestions hiding in the noise. Unfortunately the only review the tool marked
+CodeRabbit is pretty self-conscious and marks most of its inline comments as
+nitpicks and indeed they are mostly nitpicks with occasional useful suggestions
+hiding in the noise. Unfortunately the only review from the tool marked
 actionable is totally wrong.
 
 Overall I could not trust the reviews from either bots and I needed to manually
 verify their statements about the patches. This took significant time even for
-a patch that I thoroughly reviewed multiple times in the past. So even thought
+a patch that I thoroughly reviewed multiple times in the past. So even though
 the bots had some correct suggestions the net value of their contribution was
-negative as the correct suggestions very low value and needed high human effort
-to separate the correct suggestions from the incorrect ones.
+negative as the correct suggestions were very low value and needed high human
+effort to separate the correct suggestions from the incorrect ones.
