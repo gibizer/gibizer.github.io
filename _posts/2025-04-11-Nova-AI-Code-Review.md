@@ -1,6 +1,6 @@
 ---
 title: Trying AI code review on OpenStack Nova
-date: 2025-04-10 14:00:00 +0200
+date: 2025-04-11 12:39:00 +0200
 categories: [AI, code-review]
 tags: [ai, code-review, nova, openstack]
 ---
