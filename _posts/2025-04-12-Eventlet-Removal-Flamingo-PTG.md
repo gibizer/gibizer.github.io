@@ -1,8 +1,9 @@
 ---
 title: Eventlet removal - Flamingo PTG
-date: 2025-04-12 15:30:00 +0200
+date: 2025-04-11 15:30:00 +0200
 categories: [OpenStack, Eventlet]
 tags: [openstack, nova, eventlet, upstream]
+hidden: true
 ---
 
 This is the first installment of a series of posts talking about the Eventlet
@@ -113,6 +114,49 @@ two alternatives:
 {: .prompt-info }
 
 ### Nova specific discussion
+
+The discussion captured on another
+[etherpad](https://etherpad.opendev.org/p/nova-2025.2-ptg#L582).
+
+> Top of the agreement noted in the cross project section we agreed that it
+  is OK to do the transformation service by service. So it is OK if some
+  services are ready to run in threading mode while others are still only
+  supporting Eventlet in the Flamingo release.
+{: .prompt-info }
+
+We touched on switching the default to `true` on the
+`[quota]count_usage_from_placement` config options to avoid one code path that
+calls scatter-gather. However, the two quota modes are not fully equivalent.
+So this is controversial. We anyhow need to change our scatter-gather as it
+is use in many other places. So I don't think I will try to do this in
+Flamingo.
+
+I had a question about moving some code around to make the location of the code
+less confusing:
+
+> * move setup_instance_group form scheduler/utils under conductor/utils as
+  this is only called by the conductor service.
+> * move libvirt/machine_type_utils under cmd/utils as it is only called from
+  CLI commands and never from the libvirt driver or the nova-compute service.
+
+There was push back as this move would poison `git blame`. I might still try
+to push for it later but definitely not putting it to the critical path.
+
+> We agreed to re-use the existing
+  [blueprint](https://blueprints.launchpad.net/nova/+spec/eventlet-removal-part-1)
+  and use the global
+  [eventlet-removal](https://review.opendev.org/q/topic:%22eventlet-removal%22)
+  Gerrit topic.
+{: .prompt-info }
+
+> As an extension of the support both concurrency modes agreement we discussed
+  and agreed to use two sets of Tempest jobs to test the two concurrency modes.
+  However, we are not trying to have two sets of functional test, instead
+  we switch the test to run services in native threads in the functional env.
+{: .prompt-info }
+
+We also discussed plans and tasks I will not reiterate here but save for a
+later section and for later blog posts.
 
 ## Where we are today in Nova
 
