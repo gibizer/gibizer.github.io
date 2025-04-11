@@ -3,8 +3,6 @@ title: Trying AI code review on OpenStack Nova
 date: 2025-04-10 14:00:00 +0200
 categories: [AI, code-review]
 tags: [ai, code-review, nova, openstack]
-hidden: true # remove it to publish the post
-
 ---
 
 I ran an experiment using AI code review tools on OpenStack Nova patches.
