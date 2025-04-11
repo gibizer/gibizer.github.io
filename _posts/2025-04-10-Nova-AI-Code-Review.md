@@ -293,7 +293,7 @@ There are couple of new inline comments:
    > "one-time-use" throughout the document. The title uses "One-Time-Use"
    > while the body uses "one time use".
 
-    This is technically correct.
+    This is technically correct doc improvement.
 
 3. > issue (code-quality): Replace interpolated string formatting with f-string
 
@@ -364,4 +364,50 @@ There was additional "nitpick" comments provided:
 
 **The positives**
 
+* Both tools are super easy to setup for github repositories. Unfortunately
+  the same level of integration does not exists for gerrit today.
+
+* Both tools was able to report some valid comments on the patches.
+
+* Both tools was able to handle multiple commits within a single PR.
+
+* The sequence diagram for CodeRabbit provides a different viewpoint of the
+  change.
+
 **The negatives**
+
+* Both tools provided multiple invalid comments. Some of them appeared correct
+  at the first look, but looking deeper it turned out to be unnecessary or even
+  harmful.
+
+* Both tools made incorrect statements about what the proposed PR does or does
+  not do.
+
+* The valid comments the tools provided was all low value mostly nitpicks or
+  small non-consequential changes. Compared to the human review that discovered
+  actual bugs, false assumptions, and suggested structural changes enhancing
+  the structure of the code, supporting high level readability and
+  maintainability of the software.
+
+* Both tools was verbose but Sourcery was a lot more verbose repeating the same
+  set of information multiple times in different format and with different
+  wording causing fatigue from the human reviewer.
+
+The only real use I can imagine form the tools is the summarization capability
+of a big PR / long patch chain. However Sourcery made multiple factual mistakes
+in their summary and therefore I would not trust it. CodeRabbit has better
+summarization capabilities and the sequence diagram appears useful. However
+in the final version the sequence diagram was also misleading. So I would be
+hesitant to blindly trust it for every patches I did not review deeply first.
+
+CodeRabbit is pretty self conscious and marks most of its inline comments as
+nitpicks and indeed they are mostly nitpicks with occasional useful improvement
+suggestions hiding in the noise. Unfortunately the only review the tool marked
+actionable is totally wrong.
+
+Overall I could not trust the reviews from either bots and I needed to manually
+verify their statements about the patches. This took significant time even for
+a patch that I thoroughly reviewed multiple times in the past. So even thought
+the bots had some correct suggestions the net value of their contribution was
+negative as the correct suggestions very low value and needed high human effort
+to separate the correct suggestions from the incorrect ones.
