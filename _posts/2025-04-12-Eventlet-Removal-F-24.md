@@ -3,11 +3,29 @@ title: Eventlet removal - F-24
 date: 2025-04-14 18:50:00 +0200
 categories: [OpenStack, Eventlet]
 tags: [openstack, nova, eventlet, upstream]
+mermaid: true
 ---
 
 This is the next installment of a series of posts discussing the Eventlet
 removal effort from the OpenStack Nova project. We have 24 weeks left from the
-Flamingo cycle.
+Flamingo cycle, and we have 308 references to Eventlet in the Nova git repo.
+
+```bash
+❯ grep --exclude-dir=releasenotes -i eventlet -R | wc -l
+308
+```
+```mermaid
+gantt
+    title Remaining Eventlet references in the Nova repo:
+    dateFormat  X
+    axisFormat %s
+
+    section Cycle start
+    308   : 0, 308
+    section F-24
+    308   : 0, 308
+```
+
 
 You can browse the rest of the series
 [here](https://gibizer.github.io/categories/eventlet/).
