@@ -14,6 +14,7 @@ Flamingo cycle, and we have 308 references to Eventlet in the Nova git repo.
 ❯ grep --exclude-dir=releasenotes -i eventlet -R | wc -l
 308
 ```
+
 ```mermaid
 gantt
     title Remaining Eventlet references in the Nova repo:
@@ -25,7 +26,6 @@ gantt
     section F-24
     308   : 0, 308
 ```
-
 
 You can browse the rest of the series
 [here](https://gibizer.github.io/categories/eventlet/).
