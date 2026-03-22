@@ -5,7 +5,7 @@ categories: [OpenStack, Eventlet]
 tags: [openstack, nova, eventlet, upstream]
 hidden: true
 ---
-Bah, it was a long time. I published my last update 10 months ago. I'm sorry.
+Bah, it's been a long time. I published my last update 10 months ago. I'm sorry.
 It was not the plan. But like any real plan, mine also died soon after meeting
 the enemy. Time.
 
@@ -36,21 +36,21 @@ to Eventlet mode while we are fixing those nasty bugs.
 
 The nova-conductor and nova-compute still run with Eventlet by default as this
 is our first release where these services gained the capability to run without
-Eventlet. Still you can follow our [guide](https://docs.openstack.org/nova/latest/admin/concurrency.html#selecting-concurrency-mode-for-a-service)
+Eventlet. Still, you can follow our [guide](https://docs.openstack.org/nova/latest/admin/concurrency.html#selecting-concurrency-mode-for-a-service)
 and switch them to native threading. Please do that in pre-production first.
 Especially nova-compute can cause surprises, so we ask for caution and we are
 eager for your feedback.
 
 And last, our console proxies are only working with Eventlet at the time of
 Gazpacho. There is [work](https://review.opendev.org/c/openstack/nova/+/976089)
-underway to change that, but the release deadline hit before we can finish it.
+underway to change that, but the release deadline hit before we could finish it.
 
-We are also doing testing in multiple fronts. Our [nova-next CI job](https://github.com/openstack/nova/blob/7e0f18ff2baaf6aec89eb300b6942c488541da7e/.zuul.yaml#L428)
-runs all services, that supports it, in native threading mode and the tempest
+We are also doing testing on multiple fronts. Our [nova-next CI job](https://github.com/openstack/nova/blob/7e0f18ff2baaf6aec89eb300b6942c488541da7e/.zuul.yaml#L428)
+runs all services that support it in native threading mode and the tempest
 results are green and stable. We also added a job,
 [nova-alt-configuration](https://github.com/openstack/nova/blob/7e0f18ff2baaf6aec89eb300b6942c488541da7e/.zuul.yaml#L180)
 that keeps testing all our services with the deprecated Eventlet support.
-The rest of the CI jobs using each service's default mode during testing. This
+The rest of the CI jobs use each service's default mode during testing. This
 includes the jobs run by other OpenStack projects. This means that as of
 Gazpacho the greater OpenStack project already gates with native threaded
 nova-api, nova-metadata, and nova-scheduler without apparent issues. We are
@@ -70,7 +70,7 @@ At the end of the Flamingo release we made nice
 [progress](https://review.opendev.org/c/openstack/nova/+/960130) about scale
 testing our APIs and the nova-scheduler in the upstream gate with Rally, but
 this work was the one that needed to stop in Gazpacho to make room for the
-translation on nova-compute. Nevertheless we have some guidance how to scale
+work on nova-compute. Nevertheless we have some guidance on how to scale
 these services in native threading mode in our [doc](https://docs.openstack.org/nova/latest/admin/concurrency.html#tunables-for-the-native-threading-mode).
 
 And that is just the visible parts that are not done yet. During Gazpacho we
@@ -127,7 +127,7 @@ $ egrep -l -R -e "import eventlet|from eventlet" ./nova
 
 ## The journey
 
-### Adapt our timeline to realities
+### Adapting our timeline to reality
 
 Based on the progress in Flamingo we raised the flag to the TC that the
 Eventlet removal timeline of OpenStack needs to be revised to make it more
@@ -139,7 +139,7 @@ about the relationship between this work and our SLURP upgrade support.
 ### We need more Executors
 
 For me the biggest learning came from realizing how dependent our codebase
-is to different type of Executors. At a first glance an
+is on different types of Executors. At first glance an
 [Executor](https://docs.openstack.org/futurist/latest/reference/index.html#executors)
 is just a good old thread pool. A bunch of worker threads waiting for new tasks
 to execute while providing
@@ -201,7 +201,7 @@ This led to our first, but probably not our last, Executor customization:
 The enterprisy name tells everything: It is a wrapper for Executors.
 (As the mantra says: Prefer composition over inheritance.) It supports
 cancelling tasks while those tasks are delayed. The statical delay here is just
-a simplification. In our use case  every task needs to be delayed with the same
+a simplification. In our use case every task needs to be delayed with the same
 statically defined delay. You will see this simplifies the implementation.
 
 So this is how it works:
@@ -211,9 +211,9 @@ So this is how it works:
 * It has an extra thread that detects when the delay runs out and executes the
   task if it is not yet cancelled.
 
-There are couple of complications.
+There are a couple of complications.
 
-The client expect a `Future` object when it submits a task. Normally this
+The client expects a `Future` object when it submits a task. Normally this
 `Future` object is created by the real `Executor` when a task is submitted. The
 whole point in this wrapper is that it does not submit the task right away for
 execution, so it needs to create and return its own `Future` object to the
@@ -241,11 +241,11 @@ wrapping the original task into:
 The `Future` class also exposes the `set_running_or_notify_cancel()` function
 that allows our Executor wrapper to atomically check if the client cancelled
 the task, otherwise it sets the task to running state and therefore marks it
-non-cancellable any more.
+non-cancellable anymore.
 
 After all this setup the logic of the scheduler thread in the wrapper can be
-summarized as the following:
-1. Take the oldest task from the queue, if the queue empty wait on it.
+summarized as follows:
+1. Take the oldest task from the queue, if the queue is empty wait on it.
 2. Wait until the delay runs out for the task.
 3. Check if the task is not cancelled and set it to running. If cancelled go
    to 1.
@@ -282,7 +282,7 @@ full. Then each build task submitted a network setup child task to the same
 default Executor, moved on to do some other logic, then finally started
 waiting for the network setup child task. As the Executor was full with the
 build tasks, the network child tasks were waiting for free workers and never
-got them. Therefore the build task waited forever to the networking task.
+got them. Therefore the build task waited forever for the networking task.
 [Nova logs](https://github.com/openstack/nova/blob/3be17878dcb42095f3ed3fc2819c2bf776c059b5/nova/utils.py#L614-L619)
 when an Executor starts queueing up tasks, this helped figuring out
 what happened.
@@ -320,9 +320,9 @@ there is that the same message bus topic is used for other, non-capped
 operations, so we have to process the messages from the bus to find those
 operations.
 
-A simplest solution would be to have a separate Executor for each operation
+The simplest solution would be to have a separate Executor for each operation
 type with the configured cap used as the size of the Executor. This way
-we would relay on the queue in the Executor to hold the tasks waiting for a
+we would rely on the queue in the Executor to hold the tasks waiting for a
 slot. We rejected this idea as it creates too many independent Executors to
 manage, also it wastes resources as workers, even if they are idle, cannot
 be shared across different operation types.
@@ -341,18 +341,18 @@ from the given type.
 
 Also in the future we might want to come up with a way to track parent-child
 task relationships and prevent submitting the child task to the parent's
-Executor. Right now only code review prevents us to re-introduce such a
+Executor. Right now only code review prevents us from re-introducing such a
 deadlock prone situation.
 
 ### When unit testing is harder than tempest
 I realized this while herding the nova-compute Eventlet removal patches through
 CI. I expected more trouble, more instability. Once manual testing
 of the native threading mode in devstack showed that the service works, tempest
-showed limited amount of surprises. In the other hand we still have unit tests
-today that randomly hangs or produces strange SQLAlchemy issues when running
+showed limited amount of surprises. On the other hand we still have unit tests
+today that randomly hang or produce strange SQLAlchemy issues when running
 with native threading and therefore disabled in the native threaded tox job.
 In retrospect I have the following understanding explaining this:
-* The tempest suite contains pure back box tests, Eventlet is "just" a
+* The tempest suite contains pure black box tests, Eventlet is "just" a
   refactoring, the black box test does not care about our rewiring of internals
   of that box.
 * Our unit tests in many cases test the implementation of the unit not the
@@ -370,8 +370,8 @@ tempest and unit test.
 
 ### Scale testing
 
-One of the key change during Eventlet removal is the cost of concurrency. A
-native thread cost a lot more memory than a GreenThread. This forced us to
+One of the key changes during Eventlet removal is the cost of concurrency. A
+native thread costs a lot more memory than a GreenThread. This forced us to
 limit our Executor sizes to reasonable numbers as our old defaults were simply
 too much. But what is a reasonable default? As you saw above we have many
 different concurrent tasks types, limits, and delays. So, it is very hard to
