@@ -20,7 +20,7 @@ Hang on, this will be a long one.
 ## Nova's Eventlet status at Gazpacho (2026.1) release
 
 One can say that we are *almost* done. (I love famous last words.) If I look at
-it in a certain angle and from a great distance then sure, we are *almost*
+it from a certain angle and from a great distance then sure, we are *almost*
 done. You can take the Gazpacho release, [configure your services to run with
 native threading
 ](https://docs.openstack.org/nova/latest/admin/concurrency.html) and boom, no
@@ -87,7 +87,7 @@ upped our game compared to Flamingo where this number was 39.
 
 I tried to generate the bar chart of the number of remaining Eventlet mentions
 in the codebase, but the numbers do not line up nicely. In general we have
-more code lines now that referring to "eventlet" than when we started. In
+more code lines now that refer to "eventlet" than when we started. In
 reality however those mentions are a lot more centralized. We moved the
 majority of our Eventlet logic to `nova.utils`, but that file now has a lot
 more Eventlet specific lines. Also we need to test those utils, so we have a
@@ -182,7 +182,7 @@ a power state update task, but did not immediately run it. Instead it told
 Eventlet to run it after a couple seconds of delay. And if a RESUMED event
 arrived in the meantime then nova cancelled the power state update task. No
 race, no unnecessary DB update during hard reboot, but if the VM crashed
-suddenly, it's power state will updated in the DB *eventually*.
+suddenly, its power state will be updated in the DB *eventually*.
 
 The catch is, Eventlet allows cancelling a task that was started with a delay
 specified, native threading does not have such capabilities out of the box.
@@ -190,22 +190,22 @@ specified, native threading does not have such capabilities out of the box.
 The naïve implementation with native threading is adding a sleep before the
 power state update function in the task. But that is not good. A task running
 in a native thread cannot be cancelled after it started running, even if
-"running" here actually means executing `time.sleep()`. In the other hand
+"running" here actually means executing `time.sleep()`. On the other hand
 Executors have a tasks queue to handle the case where there are more tasks than
-free workers. Tasks that are queued waiting (an another form of "sleeping") for
+free workers. Tasks that are queued waiting (another form of "sleeping") for
 workers can be cancelled. This gave us a hint how to solve this. Do not
 execute `time.sleep()` but instead wait in a queue.
 
-This lead to our first, but probably not our last, Executor customization:
+This led to our first, but probably not our last, Executor customization:
 [`StaticallyDelayingCancellableTaskExecutorWrapper`](https://github.com/openstack/nova/blob/7e0f18ff2baaf6aec89eb300b6942c488541da7e/nova/utils.py#L1465).
-The enterprisy names tells everything: It is a wrapper for Executors.
+The enterprisy name tells everything: It is a wrapper for Executors.
 (As the mantra says: Prefer composition over inheritance.) It supports
 cancelling tasks while those tasks are delayed. The statical delay here is just
 a simplification. In our use case  every task needs to be delayed with the same
 statically defined delay. You will see this simplifies the implementation.
 
 So this is how it works:
-* It gets an normal Executor from the outside to use to really run tasks
+* It gets a normal Executor from the outside to use to really run tasks
 * It has a queue of delayed tasks waiting to be executed after the delay or
   ignored if it is cancelled before the delay runs out.
 * It has an extra thread that detects when the delay runs out and executes the
@@ -249,7 +249,7 @@ summarized as the following:
 2. Wait until the delay runs out for the task.
 3. Check if the task is not cancelled and set it to running. If cancelled go
    to 1.
-4. Wrap the task to connect it's result to the already returned Future and
+4. Wrap the task to connect its result to the already returned Future and
    submit it to the real Executor. Then go to 1.
 
 Of course there are a bit more error handling in the code and also we need to
@@ -267,7 +267,7 @@ so others can use it too.
 
 #### I want a single pool but separate concurrency caps on different task types
 
-This is other "exotic" use case for our Executors in nova-compute. But first
+This is another "exotic" use case for our Executors in nova-compute. But first
 we needed to hit a bug to even figure out we have a problem to solve.
 
 The bug was detected in the VMware CI, probably because it runs tempest with
@@ -298,17 +298,17 @@ to cause trouble.
 So we
 [moved the build task to its own long_task executor](https://review.opendev.org/c/openstack/nova/+/977251)
 and kept the default Executor for fire and forget tasks and child tasks that
-are not spawning grandchildrens. Then we saw that build is not the only long
+are not spawning grandchildren. Then we saw that build is not the only long
 running tasks that used the default Executor. We had snapshot as well. Then
 further looking revealed that even though these task types shared an Executor,
 the default one, and will share the new long_task Executor, they have
 individual concurrency limits implemented by bounded semaphores.
 
 The nova-compute can be configured to limit the number of concurrent VM
-lifecycle operations of a given type. E.g. by default nova-compute allowed 10
+lifecycle operations of a given type. E.g., by default nova-compute allowed 10
 parallel VM builds, 1 parallel outgoing live migration, and 5 parallel VM
 snapshots. Originally it implemented the build and snapshot case with a single
-`GreenThread` pool with 1000 workers and two bounded semaphores one for build
+`GreenThread` pool with 1000 workers and two bounded semaphores, one for build
 and one for snapshot. As `GreenThreads` are cheap, we did not have to worry
 about having a list of tasks, holding up a GreenThread each, while waiting on
 the semaphore for their execution slot. This does not work with native
@@ -360,12 +360,12 @@ In retrospect I have the following understanding explaining this:
 * In some cases unit tests are trying to cover concurrent behavior with
   clever injection of locks and events. Eventlet executes the tasks until
   completion or explicit yielding. Some tests were relying on this
-  run-to-completion semantic too which does not exists in native threading.
-* Some of our unit test doing too much. E.g. a big chunk of our unit tests
+  run-to-completion semantic too which does not exist in native threading.
+* Some of our unit tests do too much. E.g., a big chunk of our unit tests
   depend on a DB being provided to the test case.
 
-It will be interesting to see how hard will be to make our functional tests
-passing and stable with native threading as this test suits sits in between
+It will be interesting to see how hard it will be to make our functional tests
+pass and remain stable with native threading as this test suite sits in between
 tempest and unit test.
 
 ### Scale testing
@@ -391,11 +391,11 @@ hypervisor, it only has an in-memory state, and implements the happy path for
 the VM lifecycle operations. With a bit of
 [tweaking](https://review.opendev.org/c/openstack/devstack/+/962362) in
 devstack we can create 3 cells and 20 compute nodes within a single CI worker
-machine. This allows us to scale test at least our APIs, scheduler, conductor
-and even the nova-compute's virt driver independent pieces like the
+machine. This allows us to scale-test at least our APIs, scheduler, conductor,
+and even nova-compute's virt-driver-independent pieces like the
 ComputeManager and the ResourceTracker.
 
-Another complication in a our CI is that two consecutive job runs will observe
+Another complication in our CI is that two consecutive job runs will observe
 significantly different performance from the CI worker machine. It is because
 we use multiple cloud providers, each having different performance and ever
 changing load situation. So comparing perf-scale results across multiple job
@@ -403,12 +403,12 @@ runs is not feasible as we cannot control the underlying machines. Instead, we
 run the same performance tests twice in the same job, once with Eventlet and
 once with native threading, then we compare the results within the same job.
 
-This also has a nice side effect that we, at least partially, test the
-scenario of a deployment being reconfiguring form Eventlet to native threading.
+This also has the nice side effect that we, at least partially, test the
+scenario of a deployment being reconfigured from Eventlet to native threading.
 
 We started using Rally to
 [implement performance test scenarios](https://review.opendev.org/c/openstack/nova/+/960130).
-And created and ansible role that can collect and compare the perf data:
+We also created an Ansible role that can collect and compare the perf data:
 CPU, memory usage, and test execution time. Rally is nice as it gives us
 a good framework to implement and execute these tests. But it is not actively
 used in nova yet and therefore it lacks nova API microversion support,
